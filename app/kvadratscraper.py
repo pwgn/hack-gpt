@@ -1,9 +1,13 @@
-import csv
+import os
 import pandas as pd
 from typing import List, Dict, Any
 import json
 from models import ConsultantProfile
 from webscraper import WebScraper
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 DEFAULT_LOCATION = 'data/profiles.json'
 DEFAULT_PAGES = 2
@@ -53,5 +57,8 @@ class KvadratScraper:
 
 
 if __name__ == '__main__':
+    profile_location = os.environ['KGPT_PROFILE_LOCATION']
+    pages = int(os.environ['KGPT_PAGES_TO_SCRAPE'])
+
     kvadratscraper = KvadratScraper()
-    kvadratscraper.download_profiles(DEFAULT_LOCATION, pages=DEFAULT_PAGES)
+    kvadratscraper.download_profiles(profile_location, pages=pages)
