@@ -9,9 +9,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-DEFAULT_LOCATION = 'data/profiles.json'
-DEFAULT_PAGES = 2
-
 class KvadratScraper:
     def _scrape_data(self, pages: int):
         scraper = WebScraper()
@@ -49,7 +46,7 @@ class KvadratScraper:
         serialized += ']'
 
         pdf = pd.read_json(serialized)
-        pdf.to_json(filename, orient='records', force_ascii=False)
+        pdf.to_json(filename, orient='table', force_ascii=False)
 
     def download_profiles(self, filename: str, pages: int):
         consultant_profiles = self._scrape_data(pages)

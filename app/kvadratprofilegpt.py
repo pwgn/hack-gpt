@@ -14,8 +14,9 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.llms import OpenAI
 from langchain.chains import VectorDBQA
-from langchain.document_loaders import TextLoader
+from langchain.document_loaders import DataFrameLoader
 from dotenv import load_dotenv
+from pprint import pprint
 
 load_dotenv()
 
@@ -35,11 +36,12 @@ class KvadratProfilesGPT():
 
 
     def load_profiles(self, profiles_df):
-        loader = TextLoader('../state_of_the_union.txt')
+        profiles_df = profiles_df.drop(columns=['preamble', 'article', 'competence_list', 'cv_list', 'employment_list', 'education_list'])
+        loader = DataFrameLoader(profiles_df, page_content_column='content')
         documents = loader.load()
 
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-        texts = text_splitter.split_documents(documents)
+        texts_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        texts = texts_splitter.split_documents(documents)
 
         self.vectordb = Chroma.from_documents(documents=texts, embedding=self.embedding, persist_directory=self.persist_directory)
         self.vectordb.persist()
@@ -59,15 +61,26 @@ if __name__ == '__main__':
     openai_api_key = os.environ['KGPT_OPENAI_API_KEY']
     chromadb_location = os.environ['KGPT_CHROMADB_LOCATION']
 
-    profiles_df = pd.read_json(profile_location)
-
     kvadratProfilesGpt = KvadratProfilesGPT(openai_api_key, chromadb_location)
 
+    # prep
+    with open(profile_location, "r") as profile_json:
+        profiles = json.load(profile_json)
+
+    def build_profiles_content(profiles):
+        for profile in profiles['data']:
+            profile['content'] = json.dumps(profile)
+
+        return profiles
+
+    profiles = build_profiles_content(profiles)
+    profiles_df = pd.DataFrame.from_dict(profiles['data'])
+
     # load
-    kvadratProfilesGpt.load_profiles(profiles_df)
+    #kvadratProfilesGpt.load_profiles(profiles_df)
 
     # ask
-    answer = kvadratProfilesGpt.ask('What did the president say about Kentanji Brown Jackson')
+    answer = kvadratProfilesGpt.ask('role search')
     print(answer)
 
     # clean
