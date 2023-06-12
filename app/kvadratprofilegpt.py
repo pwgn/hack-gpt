@@ -1,14 +1,7 @@
-import csv
-
 import os
-import platform
-import uuid
 import pandas as pd
 from typing import List, Dict, Any
 import json
-from models import ConsultantProfile
-from chromadb.utils import embedding_functions
-from langchain.vectorstores import ElasticVectorSearch
 from langchain.vectorstores import Chroma
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
